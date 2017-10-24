@@ -3,7 +3,9 @@ INCLUDE = -Isysport/ \
 	-Icompression/liblzf/ \
 	-Icompression/zlib/ \
 	-Icompression/lzma/ \
-	-Icompression/huffman/
+	-Icompression/huffman/ \
+	-I/opt/jdk/jdk1.8.0_111/include/ \
+	-I/opt/jdk/jdk1.8.0_111/include/linux/
 
 DEFAULT_CC = /usr/bin/gcc
 DEFAULT_DEFINE = -DZ_PREFIX
@@ -27,7 +29,8 @@ SRCFILES := gtb-probe.c gtb-dec.c gtb-att.c sysport/sysport.c \
 	compression/zlib/crc32.c compression/zlib/infback.c \
 	compression/zlib/inffast.c compression/zlib/inftrees.c \
 	compression/zlib/trees.c compression/zlib/zutil.c \
-	compression/liblzf/lzf_c.c compression/liblzf/lzf_d.c
+	compression/liblzf/lzf_c.c compression/liblzf/lzf_d.c \
+	jni/net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI.c
 OBJFILES := $(patsubst %.c,%.o,$(SRCFILES))
 PROFFILES := $(SRCFILES:.c=.gcno) $(SRCFILES:.c=.gcda)
 LIBNAME := libgtb.a
