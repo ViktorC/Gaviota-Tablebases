@@ -122,9 +122,11 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/jni}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/lib/jvm/java-8-oracle/include"/>
 									<listOptionValue builtIn="false" value="/usr/lib/jvm/java-8-oracle/include/linux"/>
+									<listOptionValue builtIn="false" value="/opt/jdk/jdk1.8.0_111/include"/>
+									<listOptionValue builtIn="false" value="/opt/jdk/jdk1.8.0_111/include/linux"/>
 								</option>
 								<option id="gnu.c.compiler.option.dialect.std.988694037" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
-								<option id="gnu.c.compiler.option.include.files.797133643" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles"/>
+								<option id="gnu.c.compiler.option.include.files.797133643" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.90914972" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.so.release.533271127" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.so.release">

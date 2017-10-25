@@ -24,16 +24,21 @@ struct BOARD_POS {
 };
 
 /**
- * Copies the contents of the Java integer and character arrays into the fields of a BOARD_POS
- * struct, releases the Java arrays, and returns the struct.
+ * Copies the contents of the Java integer and character arrays into an allocated BOARD_POS struct
+ * and returns a pointer to it.
  */
-struct BOARD_POS getBoardPosition(JNIEnv * env, jintArray wSqrs, jintArray bSqrs, jcharArray wPcs,
+struct BOARD_POS* getBoardPosition(JNIEnv* env, jintArray wSqrs, jintArray bSqrs, jcharArray wPcs,
 		jcharArray bPcs);
+
+/**
+ * Releases the resources held by the struct containing the board position information.
+ */
+void releaseBoardPosition(struct BOARD_POS* posPtr);
 
 /**
  * Creates and returns a Java integer array containing the probe results.
  */
-jintArray getProbeResult(JNIEnv * env, unsigned info, unsigned dtm);
+jintArray getProbeResult(JNIEnv* env, unsigned info, unsigned dtm);
 
 JNIEXPORT jstring JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_init
 		(JNIEnv * env, jobject obj, jboolean verbose, jint compScheme, jstring paths) {
@@ -47,7 +52,7 @@ JNIEXPORT jstring JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTable
 }
 
 JNIEXPORT jstring JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_restart
-		(JNIEnv * env, jobject obj, jboolean verbose, jint compScheme, jstring paths) {
+		(JNIEnv* env, jobject obj, jboolean verbose, jint compScheme, jstring paths) {
 	const char** initPaths = tbpaths_init();
 	initPaths = tbpaths_done(initPaths);
 	const char* cPaths = (*env)->GetStringUTFChars(env, paths, false);
@@ -60,56 +65,56 @@ JNIEXPORT jstring JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTable
 }
 
 JNIEXPORT jboolean JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_isInit
-		(JNIEnv * env, jobject obj) {
+		(JNIEnv* env, jobject obj) {
 	return tb_is_initialized();
 }
 
 JNIEXPORT jint JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_availability
-		(JNIEnv * env, jobject obj) {
+		(JNIEnv* env, jobject obj) {
 	return tb_availability();
 }
 
 JNIEXPORT jlong JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_indexMemory
-		(JNIEnv * env, jobject obj) {
+		(JNIEnv* env, jobject obj) {
 	return tb_indexmemory();
 }
 
 JNIEXPORT void JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_close
-		(JNIEnv * env, jobject obj) {
+		(JNIEnv* env, jobject obj) {
 	tb_done();
 	tbpaths_done(tbpaths_init());
 	return;
 }
 
 JNIEXPORT jboolean JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_initCache
-		(JNIEnv * env, jobject obj, jlong size, jint wdlFraction) {
+		(JNIEnv* env, jobject obj, jlong size, jint wdlFraction) {
 	return tbcache_init(size, wdlFraction);
 }
 
 JNIEXPORT jboolean JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_restartCache
-		(JNIEnv * env, jobject obj, jlong size, jint wdlFraction) {
+		(JNIEnv* env, jobject obj, jlong size, jint wdlFraction) {
 	return tbcache_restart(size, wdlFraction);
 }
 
 JNIEXPORT jboolean JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_isCacheOn
-		(JNIEnv * env, jobject obj) {
+		(JNIEnv* env, jobject obj) {
 	return tbcache_is_on();
 }
 
 JNIEXPORT void JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_clearCache
-		(JNIEnv * env, jobject obj) {
+		(JNIEnv* env, jobject obj) {
 	tbcache_flush();
 	return;
 }
 
 JNIEXPORT void JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_closeCache
-		(JNIEnv * env, jobject obj) {
+		(JNIEnv* env, jobject obj) {
 	tbcache_done();
 	return;
 }
 
 JNIEXPORT void JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_getStats
-		(JNIEnv * env, jobject obj, jlongArray intStats, jdoubleArray fpStats) {
+		(JNIEnv* env, jobject obj, jlongArray intStats, jdoubleArray fpStats) {
 	unsigned long int wdlEasyHits, wdlHardProb, wdlSoftProb, wdlCacheSize;
 	unsigned long int dtmEasyHits, dtmHardProb, dtmSoftProb, dtmCacheSize;
 	unsigned long int totalHits, memoryHits, driveHits, driveMisses, bytesRead, filesOpened;
@@ -143,94 +148,115 @@ JNIEXPORT void JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBas
 }
 
 JNIEXPORT void JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_resetStats
-		(JNIEnv * env, jobject obj) {
+		(JNIEnv* env, jobject obj) {
 	tbstats_reset();
 	return;
 }
 
 JNIEXPORT jintArray JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_probe
-		(JNIEnv * env, jobject obj, jint sideToMove, jint enPassantSqr, jint castlingRights,
+		(JNIEnv* env, jobject obj, jint sideToMove, jint enPassantSqr, jint castlingRights,
 		jintArray wSqrs, jintArray bSqrs, jcharArray wPcs, jcharArray bPcs) {
 	unsigned int info, dtm;
 	jintArray out = NULL;
-	struct BOARD_POS pos = getBoardPosition(env, wSqrs, bSqrs, wPcs, bPcs);
-	if (tb_probe_hard(sideToMove, enPassantSqr, castlingRights, pos.cWSqrs, pos.cBSqrs,
-			pos.cWPcs, pos.cBPcs, &info, &dtm)) {
+	struct BOARD_POS* posPtr = getBoardPosition(env, wSqrs, bSqrs, wPcs, bPcs);
+	if (tb_probe_hard(sideToMove, enPassantSqr, castlingRights, posPtr->cWSqrs, posPtr->cBSqrs,
+			posPtr->cWPcs, posPtr->cBPcs, &info, &dtm)) {
 		out = getProbeResult(env, info, dtm);
 	}
+	releaseBoardPosition(posPtr);
 	return out;
 }
 
 JNIEXPORT jintArray JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_probeSoft
-		(JNIEnv * env, jobject obj, jint sideToMove, jint enPassantSqr, jint castlingRights,
+		(JNIEnv* env, jobject obj, jint sideToMove, jint enPassantSqr, jint castlingRights,
 		jintArray wSqrs, jintArray bSqrs, jcharArray wPcs, jcharArray bPcs) {
 	unsigned int info, dtm;
 	jintArray out = NULL;
-	struct BOARD_POS pos = getBoardPosition(env, wSqrs, bSqrs, wPcs, bPcs);
-	if (tb_probe_soft(sideToMove, enPassantSqr, castlingRights, pos.cWSqrs, pos.cBSqrs,
-			pos.cWPcs, pos.cBPcs, &info, &dtm)) {
+	struct BOARD_POS* posPtr = getBoardPosition(env, wSqrs, bSqrs, wPcs, bPcs);
+	if (tb_probe_soft(sideToMove, enPassantSqr, castlingRights, posPtr->cWSqrs, posPtr->cBSqrs,
+			posPtr->cWPcs, posPtr->cBPcs, &info, &dtm)) {
 		out = getProbeResult(env, info, dtm);
 	}
+	releaseBoardPosition(posPtr);
 	return out;
 }
 
 JNIEXPORT jint JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_probeWDL
-		(JNIEnv * env, jobject obj, jint sideToMove, jint enPassantSqr, jint castlingRights,
+		(JNIEnv* env, jobject obj, jint sideToMove, jint enPassantSqr, jint castlingRights,
 		jintArray wSqrs, jintArray bSqrs, jcharArray wPcs, jcharArray bPcs) {
 	unsigned int info;
-	struct BOARD_POS pos = getBoardPosition(env, wSqrs, bSqrs, wPcs, bPcs);
-	if (!tb_probe_WDL_hard(sideToMove, enPassantSqr, castlingRights, pos.cWSqrs, pos.cBSqrs,
-			pos.cWPcs, pos.cBPcs, &info)) {
+	struct BOARD_POS* posPtr = getBoardPosition(env, wSqrs, bSqrs, wPcs, bPcs);
+	if (!tb_probe_WDL_hard(sideToMove, enPassantSqr, castlingRights, posPtr->cWSqrs, posPtr->cBSqrs,
+			posPtr->cWPcs, posPtr->cBPcs, &info)) {
 		info = tb_UNKNOWN;
 	}
+	releaseBoardPosition(posPtr);
 	return info;
 }
 
 JNIEXPORT jint JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_probeSoftWDL
-		(JNIEnv * env, jobject obj, jint sideToMove, jint enPassantSqr, jint castlingRights,
+		(JNIEnv* env, jobject obj, jint sideToMove, jint enPassantSqr, jint castlingRights,
 		jintArray wSqrs, jintArray bSqrs, jcharArray wPcs, jcharArray bPcs) {
 	unsigned int info;
-	struct BOARD_POS pos = getBoardPosition(env, wSqrs, bSqrs, wPcs, bPcs);
-	if (!tb_probe_WDL_soft(sideToMove, enPassantSqr, castlingRights, pos.cWSqrs, pos.cBSqrs,
-			pos.cWPcs, pos.cBPcs, &info)) {
+	struct BOARD_POS* posPtr = getBoardPosition(env, wSqrs, bSqrs, wPcs, bPcs);
+	if (!tb_probe_WDL_soft(sideToMove, enPassantSqr, castlingRights, posPtr->cWSqrs, posPtr->cBSqrs,
+			posPtr->cWPcs, posPtr->cBPcs, &info)) {
 		info = tb_UNKNOWN;
 	}
+	releaseBoardPosition(posPtr);
 	return info;
 }
 
-struct BOARD_POS getBoardPosition(JNIEnv * env, jintArray wSqrs, jintArray bSqrs, jcharArray wPcs,
+struct BOARD_POS* getBoardPosition(JNIEnv* env, jintArray wSqrs, jintArray bSqrs, jcharArray wPcs,
 		jcharArray bPcs) {
 	int wLength = (*env)->GetArrayLength(env, wSqrs);
 	int bLength = (*env)->GetArrayLength(env, bSqrs);
-	jint *jWSqrs = (*env)->GetIntArrayElements(env, wSqrs, false);
-	jint *jBSqrs = (*env)->GetIntArrayElements(env, bSqrs, false);
-	jchar *jWPcs = (*env)->GetCharArrayElements(env, wPcs, false);
-	jchar *jBPcs = (*env)->GetCharArrayElements(env, bPcs, false);
+	jint* jWSqrs = (*env)->GetIntArrayElements(env, wSqrs, false);
+	jint* jBSqrs = (*env)->GetIntArrayElements(env, bSqrs, false);
+	jchar* jWPcs = (*env)->GetCharArrayElements(env, wPcs, false);
+	jchar* jBPcs = (*env)->GetCharArrayElements(env, bPcs, false);
 	unsigned cWSqrs[wLength];
 	unsigned cBSqrs[bLength];
 	unsigned char cWPcs[wLength];
 	unsigned char cBPcs[bLength];
 	for (int i = 0; i < wLength; i++) {
-		cWSqrs[i] = (unsigned) *(jWSqrs + i);
-		cWPcs[i] = (unsigned char) *(jWPcs + i);
+		cWSqrs[i] = jWSqrs[i];
+		cWPcs[i] = jWPcs[i];
 	}
 	for (int i = 0; i < bLength; i++) {
-		cBSqrs[i] = (unsigned) *(jBSqrs + i);
-		cBPcs[i] = (unsigned char) *(jBPcs + i);
+		cBSqrs[i] = jBSqrs[i];
+		cBPcs[i] = jBPcs[i];
 	}
+	struct BOARD_POS* posPtr = malloc(sizeof(struct BOARD_POS));
+	size_t wSqrsSize = wLength*sizeof(unsigned);
+	size_t bSqrsSize = bLength*sizeof(unsigned);
+	size_t wPcsSize = wLength*sizeof(unsigned char);
+	size_t bPcsSize = bLength*sizeof(unsigned char);
+	posPtr->cWSqrs = malloc(wSqrsSize);
+	posPtr->cBSqrs = malloc(bSqrsSize);
+	posPtr->cWPcs = malloc(wPcsSize);
+	posPtr->cBPcs = malloc(bPcsSize);
+	memcpy(posPtr->cWSqrs, cWSqrs, wSqrsSize);
+	memcpy(posPtr->cBSqrs, cBSqrs, bSqrsSize);
+	memcpy(posPtr->cWPcs, cWPcs, wPcsSize);
+	memcpy(posPtr->cBPcs, cBPcs, bPcsSize);
 	(*env)->ReleaseIntArrayElements(env, wSqrs, jWSqrs, 0);
 	(*env)->ReleaseIntArrayElements(env, bSqrs, jBSqrs, 0);
 	(*env)->ReleaseCharArrayElements(env, wPcs, jWPcs, 0);
 	(*env)->ReleaseCharArrayElements(env, bPcs, jBPcs, 0);
-	struct BOARD_POS pos;
-	pos.cWSqrs = cWSqrs;
-	pos.cBSqrs = cBSqrs;
-	pos.cWPcs = cWPcs;
-	pos.cBPcs = cBPcs;
-	return pos;
+	return posPtr;
 }
 
-jintArray getProbeResult(JNIEnv * env, unsigned info, unsigned dtm) {
+void releaseBoardPosition(struct BOARD_POS* posPtr) {
+	free(posPtr->cWSqrs);
+	free(posPtr->cBSqrs);
+	free(posPtr->cWPcs);
+	free(posPtr->cBPcs);
+	free(posPtr);
+	return;
+}
+
+jintArray getProbeResult(JNIEnv* env, unsigned info, unsigned dtm) {
 	jintArray jArray =  (*env)->NewIntArray(env, 2);
 	jint res[] = { info, dtm };
 	(*env)->SetIntArrayRegion(env, jArray, 0 , 2, res);
