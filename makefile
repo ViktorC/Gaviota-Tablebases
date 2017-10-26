@@ -1,23 +1,22 @@
-INCLUDE = -Isysport/ \
+INCLUDE = -I"." \
+	-Isysport/ \
 	-Icompression/ \
 	-Icompression/liblzf/ \
 	-Icompression/zlib/ \
 	-Icompression/lzma/ \
 	-Icompression/huffman/ \
-	-I/opt/jdk/jdk1.8.0_111/include/ \
-	-I/opt/jdk/jdk1.8.0_111/include/linux/
-
-DEFAULT_CC = /usr/bin/gcc
-DEFAULT_DEFINE = -DZ_PREFIX
-#DEFAULT_ARCHFLAGS = -m64
-DEFAULT_CFLAGS = -Wall -Wextra -fPIC $(INCLUDE) $(DEFAULT_DEFINE) \
-	$(DEFAULT_ARCHFLAGS)
-PREFIX = /usr/local
-OPTFLAGS = -fast -msse -DNDEBUG
+	-Ijni/ \
+	-I"$(JAVA_HOME)\include" \
+	-I"$(JAVA_HOME)\include\win32"
+MAKE = make -f makefile
+DEFAULT_CC = gcc
+DEFAULT_DEFINE = -DZ_PREFIX -DNDEBUG -DMINGW
+DEFAULT_ARCHFLAGS = -m32
+DEFAULT_CFLAGS = -fPIC -Wall -Wextra -O3 -std=c99 -c $(INCLUDE)
+OPTFLAGS = -msse
 DEBUGFLAGS = -O0 -g -DDEBUG
-PGO1FLAGS = $(OPTFLAGS) -fprofile-generate
-PGO2FLAGS = $(OPTFLAGS) -fprofile-use
-
+LDFLAGS = -shared
+LIBS = -lm -lpthread
 SRCFILES := gtb-probe.c gtb-dec.c gtb-att.c sysport/sysport.c \
 	compression/wrap.c compression/huffman/hzip.c \
 	compression/lzma/LzmaEnc.c compression/lzma/LzmaDec.c \
@@ -31,81 +30,36 @@ SRCFILES := gtb-probe.c gtb-dec.c gtb-att.c sysport/sysport.c \
 	compression/zlib/trees.c compression/zlib/zutil.c \
 	compression/liblzf/lzf_c.c compression/liblzf/lzf_d.c \
 	jni/net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI.c
-OBJFILES := $(patsubst %.c,%.o,$(SRCFILES))
-PROFFILES := $(SRCFILES:.c=.gcno) $(SRCFILES:.c=.gcda)
-LIBNAME := libgtb.a
-SONAME :=libgtb.so
-SOVERSION := 1.0.1
-SOMAJORVERSION := 1
-
-
+OBJECTS := $(patsubst %.c, %.o, $(SRCFILES))
+TARGETLIB := libgtb.so
+$(TARGETLIB): $(OBJECTS)
+	$(CC) $(ARCHFLAGS) $(CFLAGS) $(DEFINE) $(LIBS) -o $(TARGETLIB) \
+	$(OBJECTS) $(LDFLAGS)
 .PHONY: all clean
 .DEFAULT_GOAL := all
-
 all:
-	$(MAKE) $(LIBNAME) \
+	$(MAKE) $(TARGETLIB) \
 		CC='$(DEFAULT_CC)' \
 		ARCHFLAGS='$(DEFAULT_ARCHFLAGS)' \
 		DEFINE='$(DEFAULT_DEFINE)' \
-		CFLAGS='$(OPPTFLAGS) $(DEFAULT_CFLAGS)'
-	$(MAKE) $(SONAME) \
-		CC='$(DEFAULT_CC)' \
-		ARCHFLAGS='$(DEFAULT_ARCHFLAGS)' \
-		DEFINE='$(DEFAULT_DEFINE)' \
-		CFLAGS='$(OPPTFLAGS) $(DEFAULT_CFLAGS)'
-
-$(LIBNAME): $(OBJFILES)
-	$(AR) rcs $@ $(OBJFILES)
-
-$(SONAME): $(OBJFILES)   
-	$(CC) -shared $(OBJFILES) -Wl,-soname=$(SONAME).$(SOMAJORVERSION) -o $(SONAME).$(SOVERSION)
-
+		CFLAGS='$(DEFAULT_CFLAGS)' \
+		LDFLAGS='$(LDFLAGS)'
 opt:
-	$(MAKE) $(LIBNAME) \
+	$(MAKE) $(TARGETLIB) \
 		CC='$(DEFAULT_CC)' \
 		ARCHFLAGS='$(DEFAULT_ARCHFLAGS)' \
 		DEFINE='$(DEFAULT_DEFINE)' \
 		CFLAGS='$(OPTFLAGS) $(DEFAULT_CFLAGS)' \
 		LDFLAGS='$(LDFLAGS)'
-
 debug:
-	$(MAKE) $(LIBNAME) \
+	$(MAKE) $(TARGETLIB) \
 		CC='$(DEFAULT_CC)' \
 		ARCHFLAGS='$(DEFAULT_ARCHFLAGS)' \
 		DEFINE='$(DEFAULT_DEFINE)' \
 		CFLAGS='$(DEBUGFLAGS) $(DEFAULT_CFLAGS)' \
 		LDFLAGS='$(LDFLAGS)'
-
-pgo-start:
-	$(MAKE) $(LIBNAME) \
-		CC='$(DEFAULT_CC)' \
-		ARCHFLAGS='$(DEFAULT_ARCHFLAGS)' \
-		DEFINE='$(DEFAULT_DEFINE)' \
-		CFLAGS='$(PGO1FLAGS) $(DEFAULT_CFLAGS)' \
-		LDFLAGS='$(LDFLAGS) -fprofile-generate'
-
-pgo-finish:
-	$(MAKE) $(LIBNAME) \
-		CC='$(DEFAULT_CC)' \
-		ARCHFLAGS='$(DEFAULT_ARCHFLAGS)' \
-		DEFINE='$(DEFAULT_DEFINE)' \
-		CFLAGS='$(PGO2FLAGS) $(DEFAULT_CFLAGS)' \
-		LDFLAGS='$(LDFLAGS) -fprofile-generate'
-
 clean:
-	$(RM) -f $(OBJFILES) $(LIBNAME) $(SONAME)
-
-pgo-clean:
-	$(RM) -f $(PROFFILES)
-
-install:
-	install -m 755 -o root -g root $(LIBNAME) $(SONAME).$(SOVERSION) $(PREFIX)/lib
-	ln -sf $(SONAME).$(SOMAJORVERSION) $(PREFIX)/lib/$(SONAME)
-	install -m 644 -o root -g root gtb-probe.h $(PREFIX)/include
-	ldconfig
-
+	$(RM) -f $(OBJFILES) $(TARGETLIB)
 .depend:
 	$(CC) -MM $(DEFAULT_CFLAGS) $(SRCFILES) > $@
-
 include .depend
-

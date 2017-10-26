@@ -10,6 +10,7 @@
 #include "gtb-probe.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 /**
  * A struct for holding the board information required for probing.
@@ -115,27 +116,27 @@ JNIEXPORT void JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBas
 
 JNIEXPORT void JNICALL Java_net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI_getStats
 		(JNIEnv* env, jobject obj, jlongArray intStats, jdoubleArray fpStats) {
-	unsigned long int wdlEasyHits, wdlHardProb, wdlSoftProb, wdlCacheSize;
-	unsigned long int dtmEasyHits, dtmHardProb, dtmSoftProb, dtmCacheSize;
-	unsigned long int totalHits, memoryHits, driveHits, driveMisses, bytesRead, filesOpened;
+	unsigned long long wdlEasyHits, wdlHardProb, wdlSoftProb, wdlCacheSize;
+	unsigned long long dtmEasyHits, dtmHardProb, dtmSoftProb, dtmCacheSize;
+	unsigned long long totalHits, memoryHits, driveHits, driveMisses, bytesRead, filesOpened;
 	double wdlOccupancy, dtmOccupancy, memoryEfficiency;
 	struct TB_STATS stats;
 	tbstats_get(&stats);
-	wdlEasyHits = (unsigned long int) stats.wdl_easy_hits[0] | ((unsigned long int) stats.wdl_easy_hits[1] << 32);
-	wdlHardProb = (unsigned long int) stats.wdl_hard_prob[0] | ((unsigned long int) stats.wdl_hard_prob[1] << 32);
-	wdlSoftProb = (unsigned long int) stats.wdl_soft_prob[0] | ((unsigned long int) stats.wdl_soft_prob[1] << 32);
+	wdlEasyHits = (unsigned long long) stats.wdl_easy_hits[0] | ((unsigned long long) stats.wdl_easy_hits[1]) << 32;
+	wdlHardProb = (unsigned long long) stats.wdl_hard_prob[0] | ((unsigned long long) stats.wdl_hard_prob[1]) << 32;
+	wdlSoftProb = (unsigned long long) stats.wdl_soft_prob[0] | ((unsigned long long) stats.wdl_soft_prob[1]) << 32;
 	wdlCacheSize = stats.wdl_cachesize;
 	wdlOccupancy = stats.wdl_occupancy;
-	dtmEasyHits = (unsigned long int) stats.dtm_easy_hits[0] | ((unsigned long int) stats.dtm_easy_hits[1] << 32);
-	dtmHardProb = (unsigned long int) stats.dtm_hard_prob[0] | ((unsigned long int) stats.dtm_hard_prob[1] << 32);
-	dtmSoftProb = (unsigned long int) stats.dtm_soft_prob[0] | ((unsigned long int) stats.dtm_soft_prob[1] << 32);
+	dtmEasyHits = (unsigned long long) stats.dtm_easy_hits[0] | ((unsigned long long) stats.dtm_easy_hits[1]) << 32;
+	dtmHardProb = (unsigned long long) stats.dtm_hard_prob[0] | ((unsigned long long) stats.dtm_hard_prob[1]) << 32;
+	dtmSoftProb = (unsigned long long) stats.dtm_soft_prob[0] | ((unsigned long long) stats.dtm_soft_prob[1]) << 32;
 	dtmCacheSize = stats.dtm_cachesize;
 	dtmOccupancy = stats.dtm_occupancy;
-	totalHits = (unsigned long int) stats.total_hits[0] | ((unsigned long int) stats.total_hits[1] << 32);
-	memoryHits = (unsigned long int) stats.memory_hits[0] | ((unsigned long int) stats.memory_hits[1] << 32);
-	driveHits = (unsigned long int) stats.drive_hits[0] | ((unsigned long int) stats.drive_hits[1] << 32);
-	driveMisses = (unsigned long int) stats.drive_miss[0] | ((unsigned long int) stats.drive_miss[1] << 32);
-	bytesRead = (unsigned long int) stats.bytes_read[0] | ((unsigned long int) stats.bytes_read[1] << 32);
+	totalHits = (unsigned long long) stats.total_hits[0] | ((unsigned long long) stats.total_hits[1]) << 32;
+	memoryHits = (unsigned long long) stats.memory_hits[0] | ((unsigned long long) stats.memory_hits[1]) << 32;
+	driveHits = (unsigned long long) stats.drive_hits[0] | ((unsigned long long) stats.drive_hits[1]) << 32;
+	driveMisses = (unsigned long long) stats.drive_miss[0] | ((unsigned long long) stats.drive_miss[1]) << 32;
+	bytesRead = (unsigned long long) stats.bytes_read[0] | ((unsigned long long) stats.bytes_read[1]) << 32;
 	filesOpened = stats.files_opened;
 	memoryEfficiency = stats.memory_efficiency;
 	jlong cIntArray[] = { wdlEasyHits, wdlHardProb, wdlSoftProb, wdlCacheSize,
@@ -257,8 +258,8 @@ void releaseBoardPosition(struct BOARD_POS* posPtr) {
 }
 
 jintArray getProbeResult(JNIEnv* env, unsigned info, unsigned dtm) {
-	jintArray jArray =  (*env)->NewIntArray(env, 2);
+	jintArray jArray = (*env)->NewIntArray(env, 2);
 	jint res[] = { info, dtm };
-	(*env)->SetIntArrayRegion(env, jArray, 0 , 2, res);
+	(*env)->SetIntArrayRegion(env, jArray, 0, 2, res);
 	return jArray;
 }
