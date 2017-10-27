@@ -1,4 +1,12 @@
-INCLUDE = -I"." \
+MAKE := make -f makefile
+ifeq ($(OS),Windows_NT)
+	JINC_SUBDIR := win32	
+	TARG_LIB := gtb.dll
+else
+	JINC_SUBDIR := linux
+	TARG_LIB := libgtb.so
+endif
+INCLUDES = -I./ \
 	-Isysport/ \
 	-Icompression/ \
 	-Icompression/liblzf/ \
@@ -6,18 +14,17 @@ INCLUDE = -I"." \
 	-Icompression/lzma/ \
 	-Icompression/huffman/ \
 	-Ijni/ \
-	-I"$(JAVA_HOME)\include" \
-	-I"$(JAVA_HOME)\include\win32"
-MAKE = make -f makefile
-DEFAULT_CC = gcc
-DEFAULT_DEFINE = -DZ_PREFIX -DNDEBUG -DMINGW
-DEFAULT_ARCHFLAGS = -m32
-DEFAULT_CFLAGS = -fPIC -Wall -Wextra -O3 -std=c99 -c $(INCLUDE)
-OPTFLAGS = -msse
-DEBUGFLAGS = -O0 -g -DDEBUG
-LDFLAGS = -shared
-LIBS = -lm -lpthread
-SRCFILES := gtb-probe.c gtb-dec.c gtb-att.c sysport/sysport.c \
+	-I"$(JAVA_HOME)/include/" \
+	-I"$(JAVA_HOME)/include/$(JINC_SUBDIR)/"
+DEFAULT_CC := gcc
+DEFAULT_ARCH := -m64
+DEFAULT_DEFS := -DZ_PREFIX -DNDEBUG
+DEFAULT_CFLAGS = -fPIC -std=c99 $(DEFAULT_ARCH) $(DEFAULT_DEFS) $(INCLUDES)
+OPT_CFLAGS := -msse -O3
+DEBUG_CFLAGS := -O0 -g -DDEBUG
+DEFAULT_LDFLAGS := -shared
+DEFAULT_LIBS := -lm -lpthread
+SOURCES := gtb-probe.c gtb-dec.c gtb-att.c sysport/sysport.c \
 	compression/wrap.c compression/huffman/hzip.c \
 	compression/lzma/LzmaEnc.c compression/lzma/LzmaDec.c \
 	compression/lzma/Alloc.c compression/lzma/LzFind.c \
@@ -30,36 +37,32 @@ SRCFILES := gtb-probe.c gtb-dec.c gtb-att.c sysport/sysport.c \
 	compression/zlib/trees.c compression/zlib/zutil.c \
 	compression/liblzf/lzf_c.c compression/liblzf/lzf_d.c \
 	jni/net_viktorc_detroid_framework_engine_GaviotaTableBaseJNI.c
-OBJECTS := $(patsubst %.c, %.o, $(SRCFILES))
-TARGETLIB := libgtb.so
-$(TARGETLIB): $(OBJECTS)
-	$(CC) $(ARCHFLAGS) $(CFLAGS) $(DEFINE) $(LIBS) -o $(TARGETLIB) \
-	$(OBJECTS) $(LDFLAGS)
+BUILD_DIR := build
+OBJECTS = $(SOURCES:%.c=%.o)
+$(TARG_LIB): $(OBJECTS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $?
 .PHONY: all clean
-.DEFAULT_GOAL := all
+.DEFAULT_GOAL := debug
 all:
-	$(MAKE) $(TARGETLIB) \
+	$(MAKE) $(TARG_LIB) \
 		CC='$(DEFAULT_CC)' \
-		ARCHFLAGS='$(DEFAULT_ARCHFLAGS)' \
-		DEFINE='$(DEFAULT_DEFINE)' \
 		CFLAGS='$(DEFAULT_CFLAGS)' \
-		LDFLAGS='$(LDFLAGS)'
+		LDFLAGS='$(DEFAULT_LDFLAGS)' \
+		LIBS='$(DEFAULT_LIBS)'
 opt:
-	$(MAKE) $(TARGETLIB) \
+	$(MAKE) $(TARG_LIB) \
 		CC='$(DEFAULT_CC)' \
-		ARCHFLAGS='$(DEFAULT_ARCHFLAGS)' \
-		DEFINE='$(DEFAULT_DEFINE)' \
-		CFLAGS='$(OPTFLAGS) $(DEFAULT_CFLAGS)' \
-		LDFLAGS='$(LDFLAGS)'
+		CFLAGS='$(DEFAULT_CFLAGS) $(OPT_CFLAGS)' \
+		LDFLAGS='$(DEFAULT_LDFLAGS)' \
+		LIBS='$(DEFAULT_LIBS)'
 debug:
-	$(MAKE) $(TARGETLIB) \
+	$(MAKE) $(TARG_LIB) \
 		CC='$(DEFAULT_CC)' \
-		ARCHFLAGS='$(DEFAULT_ARCHFLAGS)' \
-		DEFINE='$(DEFAULT_DEFINE)' \
-		CFLAGS='$(DEBUGFLAGS) $(DEFAULT_CFLAGS)' \
-		LDFLAGS='$(LDFLAGS)'
+		CFLAGS='$(DEFAULT_CFLAGS) $(DEBUG_CFLAGS)' \
+		LDFLAGS='$(DEFAULT_LDFLAGS)' \
+		LIBS='$(DEFAULT_LIBS)'
 clean:
-	$(RM) -f $(OBJFILES) $(TARGETLIB)
+	$(RM) $(OBJECTS) $(TARG_LIB)
 .depend:
-	$(CC) -MM $(DEFAULT_CFLAGS) $(SRCFILES) > $@
+	$(CC) -MM $(DEFAULT_CFLAGS) $(SOURCES) > $@
 include .depend
