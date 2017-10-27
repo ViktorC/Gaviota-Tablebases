@@ -1,12 +1,18 @@
 MAKE := make -f makefile
 ifeq ($(OS),Windows_NT)
-	JINC_SUBDIR := win32	
+	JINC_DIR := \include
+	JINC_SUBDIR := \win32
 	TARG_LIB := gtb.dll
+	DEFAULT_DEFS := -DZ_PREFIX -DNDEBUG -DMINGW
+	DEFAULT_LIBS := 
 else
-	JINC_SUBDIR := linux
+	JINC_DIR := /include
+	JINC_SUBDIR := /linux
 	TARG_LIB := libgtb.so
+	DEFAULT_DEFS := -DZ_PREFIX -DNDEBUG
+	DEFAULT_LIBS := -lm -lpthread
 endif
-INCLUDES = -I./ \
+INCLUDES = -I. \
 	-Isysport/ \
 	-Icompression/ \
 	-Icompression/liblzf/ \
@@ -14,16 +20,14 @@ INCLUDES = -I./ \
 	-Icompression/lzma/ \
 	-Icompression/huffman/ \
 	-Ijni/ \
-	-I"$(JAVA_HOME)/include/" \
-	-I"$(JAVA_HOME)/include/$(JINC_SUBDIR)/"
+	-I"$(JAVA_HOME)$(JINC_DIR)" \
+	-I"$(JAVA_HOME)$(JINC_DIR)$(JINC_SUBDIR)"
 DEFAULT_CC := gcc
 DEFAULT_ARCH := -m64
-DEFAULT_DEFS := -DZ_PREFIX -DNDEBUG
 DEFAULT_CFLAGS = -fPIC -std=c99 $(DEFAULT_ARCH) $(DEFAULT_DEFS) $(INCLUDES)
 OPT_CFLAGS := -msse -O3
 DEBUG_CFLAGS := -O0 -g -DDEBUG
 DEFAULT_LDFLAGS := -shared
-DEFAULT_LIBS := -lm -lpthread
 SOURCES := gtb-probe.c gtb-dec.c gtb-att.c sysport/sysport.c \
 	compression/wrap.c compression/huffman/hzip.c \
 	compression/lzma/LzmaEnc.c compression/lzma/LzmaDec.c \
